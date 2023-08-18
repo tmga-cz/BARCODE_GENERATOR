@@ -9,20 +9,22 @@
 ###                 3, Obrázky postupně v kládá do Excel souboru vystup.xlsx
 #########################################################################################################
 import openpyxl 
-from openpyxl import load_workbook
 
 import barcode
 from barcode.writer import ImageWriter
 
-
 import PIL
 from PIL import Image
 
+### POCATECNI PROMENE ###
+
+
+### KONEC - POCATECNI PROMENE ###
 
 # Funkce pro načtení všech zaznamu v souboru 
-def load_all_enteries_in_excell():
+def loadAllEnteriesInExcell(cislo_sloupce):
     #Nacteni excelovskeho worbooku ze souboru 
-    book = load_workbook('Otis CPN.xlsx')
+    book = openpyxl.load_workbook('Otis CPN.xlsx')
     #Vybrani aktivniho prvniho listu z listu z workbooku  
     sheet = book.active
 
@@ -31,22 +33,19 @@ def load_all_enteries_in_excell():
 
     # Iterovani vsech radek v Excellovskem listu 
     for row in sheet:
-        # Get the value of the first cell
-        # in the row (the "Name" cell)
-        zaznam = row[9].value
-        # Add the value to the list
+        # Dostani prvni hodnoty ze sloupce (cislo_sloupce), pozor cislovani je od nuly
+        zaznam = row[cislo_sloupce].value
        
+        #Podminka pokud zde nic neni, nevypisuj to
         if(zaznam == None):
-            continue
-            
+            continue    
+
+        # Pridani hodnoty do listu     
         zaznamy.append(zaznam)
 
     #Vypsani vsech zaznamu v listu
     print(zaznamy)
 
-
-
-load_all_enteries_in_excell()
 
 
 
@@ -78,5 +77,16 @@ img.anchor = 'A8'
 ws.add_image(img)
 wb.save('out.xlsx')
 
+
+
+# Definovani main funkce
+def main():
+    loadAllEnteriesInExcell(cislo_sloupce=8)
+
+
+
+if __name__=="__main__":
+    main()
+  
 
 
