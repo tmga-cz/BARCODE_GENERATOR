@@ -25,12 +25,21 @@ cesta_desktop_pro_puvodni_velikost = os.environ['USERPROFILE'] + "\\Desktop\\BAR
 cesta_desktop_pro_zmenenou_velikost = os.environ['USERPROFILE'] + "\\Desktop\\BARCODE-GENERATOR\\generator-barkody-zmenena-velikost\\"
 # Jestli se má generovat text pod obrázkem barkodu
 generovat_text_pod_barkodem = True
-### KONEC - POCATECNI PROMENE ###
+
 
 ### GLOBALNI PROMENE ###
+pocet_zaznamu = 1
+excel_souradnice_y = 1
+
+###
+workbook = openpyxl.Workbook()
+worksheet = workbook.worksheets[0]
 
 # Funkce pro načtení všech zaznamu v souboru 
-def loadAllEnteriesFromExcell(cislo_sloupce):
+def loadAllEnteriesFromExcel(cislo_sloupce):
+    global pocet_zaznamu
+    global excel_souradnice_y
+
     #Nacteni excelovskeho worbooku ze souboru 
     book = openpyxl.load_workbook('Otis CPN.xlsx')
     #Vybrani aktivniho prvniho listu z listu z workbooku  
@@ -39,19 +48,19 @@ def loadAllEnteriesFromExcell(cislo_sloupce):
     #Vytvoreni listu pro ukladani hodnot
     zaznamy = []
 
-    # Iterovani vsech radek v Excellovskem listu 
-    
-    pocet_zaznamu = 1
+    # Iterovani vsech radek v Excelovskem listu
    
     for row in sheet:
         # Dostani prvni hodnoty ze sloupce (cislo_sloupce), pozor cislovani je od nuly
         zaznam = row[cislo_sloupce].value
         #Podminka pokud zde nic neni, nevypisuj to
-        print(pocet_zaznamu)
+        #print(pocet_zaznamu)
         if(zaznam == None):
             continue    
-
-        writeBarcodesIntoExcell(generateBarcodeWithNewDimensions(generateBarcodeFromString(zaznam)))
+        writeBarcodesIntoExcel(generateBarcodeWithNewDimensions(generateBarcodeFromString(zaznam)))
+      
+        pocet_zaznamu += 1
+        excel_souradnice_y += 5
 
 def generateBarcodeFromString(alfanum_code):
     
@@ -73,40 +82,36 @@ def generateBarcodeWithNewDimensions(original_image):
     resized = to_be_resized.resize(newSize, resample=PIL.Image.NEAREST) #je možné vybrat více druhů resamplů, NEAREST vypadá nejlíp
     generated_path_plus_filename_resized = resized.save(cesta_desktop_pro_zmenenou_velikost + 'resized_'+ original_image) # ulozeni obrazku s novými rozmery
     print('Soubor se zmenenou velikosti: ' + cesta_desktop_pro_zmenenou_velikost + 'resized_' + original_image)
-    returning_for_writeBarcodesIntoExcell = original_image
-    return returning_for_writeBarcodesIntoExcell
+    returning_for_writeBarcodesIntoExcel = original_image
+    return returning_for_writeBarcodesIntoExcel
     ### KONEC - NASTAVENI-VELIKOSTI-OBRAZKU
 
-def writeBarcodesIntoExcell(resized_image_for_excell):
-    cell_number = 1
-    cell = 'A' + str(cell_number)
+def writeBarcodesIntoExcel(resized_image_for_excel):
 
-    workbook = openpyxl.Workbook()
-    worksheet = workbook.worksheets[0]
+    excel_souradnice_y
+    excel_souradnice = 'A' + str(excel_souradnice_y)
     
-    print("Zapis souboru do Excelu: " + 'resized_' + resized_image_for_excell)
+    print("Zapis souboru do Excelu: " + 'resized_' + resized_image_for_excel)
     print()
 
-    img = openpyxl.drawing.image.Image(cesta_desktop_pro_zmenenou_velikost + 'resized_'+ resized_image_for_excell)
-    img.anchor = cell
+    img = openpyxl.drawing.image.Image(cesta_desktop_pro_zmenenou_velikost + 'resized_'+ resized_image_for_excel)
+    img.anchor = excel_souradnice
     worksheet.add_image(img)
 
-
-    workbook.save('out.xlsx')
-
-    cell_number = cell_number + 5
-    print(cell)
+    print(excel_souradnice)
 
 
 # Definovani main funkce
 def main():
+    
+    loadAllEnteriesFromExcel(cislo_sloupce=8)
 
-    loadAllEnteriesFromExcell(cislo_sloupce=8)
-  
-
+    print("Konec")
+    workbook.save('out.xlsx')
   
 if __name__=="__main__":
     main()
+    
   
 
 
