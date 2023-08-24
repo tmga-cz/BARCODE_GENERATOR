@@ -16,6 +16,7 @@ import barcode
 from barcode.writer import ImageWriter
 import PIL
 from PIL import Image
+import os
 # KONEC - MODULY
 
 
@@ -26,14 +27,28 @@ cesta_desktop_pro_zmenenou_velikost = os.environ['USERPROFILE'] + "\\Desktop\\BA
 # Jestli se má generovat text pod obrázkem barkodu
 generovat_text_pod_barkodem = True
 
-
 ### GLOBALNI PROMENE ###
 pocet_zaznamu = 1
 excel_souradnice_y = 1
-
 ###
 workbook = openpyxl.Workbook()
 worksheet = workbook.worksheets[0]
+
+# Funkce pro mazani starych zaznamu
+def delete_files_in_directory_and_subdirectories(directory_path):
+    try:
+        for root, dirs, files in os.walk(directory_path):
+            for file in files:
+                file_path = os.path.join(root, file)
+                os.remove(file_path)
+            print("Všechny stare podadresare a soubory v " + " - " + directory_path + " byly smazány")
+    except OSError:
+        print("Při mazání souborů  a podadresářů se vyskytly chyby")
+
+
+# Usage
+directory_path = '/path/to/directory'
+delete_files_in_directory_and_subdirectories(directory_path)
 
 # Funkce pro načtení všech zaznamu v souboru 
 def loadAllEnteriesFromExcel(cislo_sloupce):
@@ -62,8 +77,7 @@ def loadAllEnteriesFromExcel(cislo_sloupce):
         pocet_zaznamu += 1
         excel_souradnice_y += 5
 
-def generateBarcodeFromString(alfanum_code):
-    
+def generateBarcodeFromString(alfanum_code):    
     sample_barcode = barcode.get('code128', alfanum_code, writer=ImageWriter())
     ### NASTAVENI-POPISKU
     barcode.base.Barcode.default_writer_options['write_text'] = generovat_text_pod_barkodem
@@ -87,28 +101,28 @@ def generateBarcodeWithNewDimensions(original_image):
     ### KONEC - NASTAVENI-VELIKOSTI-OBRAZKU
 
 def writeBarcodesIntoExcel(resized_image_for_excel):
-
+    global excel_souradnice
     excel_souradnice_y
     excel_souradnice = 'A' + str(excel_souradnice_y)
-    
-    print("Zapis souboru do Excelu: " + 'resized_' + resized_image_for_excel)
-    print()
-
+    print("Zapis na souradnice ---> " + excel_souradnice + " do Excelu: " + 'resized_' + resized_image_for_excel+"\n")
     img = openpyxl.drawing.image.Image(cesta_desktop_pro_zmenenou_velikost + 'resized_'+ resized_image_for_excel)
     img.anchor = excel_souradnice
     worksheet.add_image(img)
-
-    print(excel_souradnice)
+ 
 
 
 # Definovani main funkce
 def main():
-    
+    delete_files_in_directory_and_subdirectories(cesta_desktop_pro_puvodni_velikost)
+    delete_files_in_directory_and_subdirectories(cesta_desktop_pro_zmenenou_velikost)
+    print()
     loadAllEnteriesFromExcel(cislo_sloupce=8)
-
-    print("Konec")
     workbook.save('out.xlsx')
-  
+    print("Konec")
+
+    
+
+
 if __name__=="__main__":
     main()
     
